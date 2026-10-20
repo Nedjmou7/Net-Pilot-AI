@@ -1,6 +1,4 @@
-export type DeviceType = "router" | "switch" | "pc" | "server";
-export type CableType = "straight" | "cross" | "console" | "fiber";
-export type RoutingProtocol = "ospf" | "rip" | "static" | "none";
+export type DeviceType = 'router' | 'switch' | 'pc' | 'server';
 
 export interface Device {
   id: string;
@@ -15,7 +13,7 @@ export interface Link {
   a_port: string;
   b: string;
   b_port: string;
-  cable: CableType;
+  cable: 'straight' | 'cross' | 'crossover' | 'serial' | 'console' | 'fiber' | 'auto';
 }
 
 export interface Vlan {
@@ -23,7 +21,7 @@ export interface Vlan {
   name: string;
 }
 
-export interface IpPlanItem {
+export interface IpAssignment {
   device: string;
   interface: string;
   ip: string;
@@ -32,7 +30,7 @@ export interface IpPlanItem {
 }
 
 export interface RoutingConfig {
-  protocol: RoutingProtocol;
+  protocol: string;
   process_id?: number | null;
   area?: number | null;
 }
@@ -46,25 +44,27 @@ export interface DhcpPool {
 }
 
 export interface NatConfig {
-  inside_interfaces: string[];
+  inside_interface: string;
   outside_interface: string;
   pool_name?: string | null;
-  type: "pat" | "dynamic" | "static";
+  overload: boolean;
 }
 
-export interface AclRule {
-  id: number | string;
-  type: "standard" | "extended";
-  action: "permit" | "deny";
-  source: string;
-  destination?: string | null;
-  protocol?: string | null;
+export interface AclConfig {
+  id: number;
+  type: 'standard' | 'extended';
+  rules: string[];
+  applied_to?: {
+    device: string;
+    interface: string;
+    direction: 'in' | 'out';
+  } | null;
 }
 
 export interface ServicesConfig {
   dhcp: DhcpPool[];
-  nat?: NatConfig | null;
-  acls: AclRule[];
+  nat: NatConfig | null;
+  acls: AclConfig[];
 }
 
 export interface Topology {
@@ -72,7 +72,7 @@ export interface Topology {
   devices: Device[];
   links: Link[];
   vlans: Vlan[];
-  ip_plan: IpPlanItem[];
+  ip_plan: IpAssignment[];
   routing: RoutingConfig;
   services: ServicesConfig;
 }
@@ -80,11 +80,12 @@ export interface Topology {
 export interface ValidationResult {
   errors: string[];
   warnings: string[];
+  is_valid?: boolean;
 }
 
 export interface ChatResponse {
   reply: string;
-  intent: "build" | "question" | "troubleshoot";
+  intent: 'build' | 'question' | 'troubleshoot';
   topology?: Topology | null;
   sources: string[];
   validation: ValidationResult;
@@ -95,26 +96,27 @@ export interface GenerateResponse {
   cli_configs: Record<string, string>;
 }
 
-export interface ProjectItem {
+export interface Project {
   id: number;
   name: string;
-  topology: Topology;
+  topology?: Topology;
+  topology_json?: string;
   created_at: string;
   updated_at: string;
-  messages?: Array<{
-    id: number;
-    role: "user" | "assistant";
-    content: string;
-    intent?: string;
-    created_at: string;
-  }>;
 }
 
-export interface HealthResponse {
+export interface HealthStatus {
   status: string;
-  ollama_online: boolean;
-  ollama_model: string;
-  database_online: boolean;
-  chroma_online: boolean;
-  version: string;
+  ollama_online?: boolean;
+  ollama_model?: string;
+  database_online?: boolean;
+  chroma_online?: boolean;
+  version?: string;
+  ollama?: {
+    status: string;
+    ollama_connected: boolean;
+    model: string;
+    model_available: boolean;
+  };
+  database?: string;
 }
