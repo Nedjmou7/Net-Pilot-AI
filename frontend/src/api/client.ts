@@ -67,8 +67,8 @@ class ApiClient {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
   }
 
-  async pushToPacketTracer(topology: Topology): Promise<{ success: boolean; message: string }> {
-    return request<{ success: boolean; message: string }>('/api/packet-tracer/push', {
+  async pushToPacketTracer(topology: Topology): Promise<{ success: boolean; message: string; bundle_path?: string; packet_tracer_started?: boolean }> {
+    return request<{ success: boolean; message: string; bundle_path?: string; packet_tracer_started?: boolean }>('/api/packet-tracer/push', {
       method: 'POST',
       body: JSON.stringify({ topology })
     });

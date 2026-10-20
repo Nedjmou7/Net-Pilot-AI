@@ -9,5 +9,6 @@ chroma_data/
 chroma_db/
 evaluation_results.json
 bridge/inbox/
+bridge/bundles/
 frontend/node_modules/
 frontend/dist/
