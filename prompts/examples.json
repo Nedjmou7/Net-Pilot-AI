@@ -1,0 +1,142 @@
+[
+  {
+    "user": "Build a network with 3 routers and OSPF",
+    "assistant": {
+      "name": "3-router-ospf",
+      "devices": [
+        {"id": "R1", "type": "router", "model": "2911", "x": 200, "y": 120},
+        {"id": "R2", "type": "router", "model": "2911", "x": 450, "y": 120},
+        {"id": "R3", "type": "router", "model": "2911", "x": 700, "y": 120},
+        {"id": "SW1", "type": "switch", "model": "2960-24TT", "x": 200, "y": 280},
+        {"id": "SW2", "type": "switch", "model": "2960-24TT", "x": 700, "y": 280},
+        {"id": "PC1", "type": "pc", "model": "PC-PT", "x": 200, "y": 450},
+        {"id": "PC2", "type": "pc", "model": "PC-PT", "x": 700, "y": 450}
+      ],
+      "links": [
+        {"a": "R1", "a_port": "GigabitEthernet0/1", "b": "R2", "b_port": "GigabitEthernet0/0", "cable": "crossover"},
+        {"a": "R2", "a_port": "GigabitEthernet0/1", "b": "R3", "b_port": "GigabitEthernet0/0", "cable": "crossover"},
+        {"a": "R1", "a_port": "GigabitEthernet0/0", "b": "SW1", "b_port": "GigabitEthernet0/1", "cable": "straight"},
+        {"a": "SW1", "a_port": "FastEthernet0/1", "b": "PC1", "b_port": "FastEthernet0", "cable": "straight"},
+        {"a": "R3", "a_port": "GigabitEthernet0/1", "b": "SW2", "b_port": "GigabitEthernet0/1", "cable": "straight"},
+        {"a": "SW2", "a_port": "FastEthernet0/1", "b": "PC2", "b_port": "FastEthernet0", "cable": "straight"}
+      ],
+      "vlans": [],
+      "ip_plan": [
+        {"device": "R1", "interface": "GigabitEthernet0/0", "ip": "192.168.1.1", "mask": "255.255.255.0", "gateway": null},
+        {"device": "PC1", "interface": "FastEthernet0", "ip": "192.168.1.10", "mask": "255.255.255.0", "gateway": "192.168.1.1"},
+        {"device": "R1", "interface": "GigabitEthernet0/1", "ip": "10.0.12.1", "mask": "255.255.255.252", "gateway": null},
+        {"device": "R2", "interface": "GigabitEthernet0/0", "ip": "10.0.12.2", "mask": "255.255.255.252", "gateway": null},
+        {"device": "R2", "interface": "GigabitEthernet0/1", "ip": "10.0.23.1", "mask": "255.255.255.252", "gateway": null},
+        {"device": "R3", "interface": "GigabitEthernet0/0", "ip": "10.0.23.2", "mask": "255.255.255.252", "gateway": null},
+        {"device": "R3", "interface": "GigabitEthernet0/1", "ip": "192.168.2.1", "mask": "255.255.255.0", "gateway": null},
+        {"device": "PC2", "interface": "FastEthernet0", "ip": "192.168.2.10", "mask": "255.255.255.0", "gateway": "192.168.2.1"}
+      ],
+      "routing": {
+        "protocol": "ospf",
+        "process_id": 1,
+        "area": 0
+      },
+      "services": {
+        "dhcp": [],
+        "nat": null,
+        "acls": []
+      }
+    }
+  },
+  {
+    "user": "Create 2 VLANs with inter-VLAN routing and DHCP",
+    "assistant": {
+      "name": "intervlan-dhcp",
+      "devices": [
+        {"id": "R1", "type": "router", "model": "2911", "x": 400, "y": 120},
+        {"id": "SW1", "type": "switch", "model": "2960-24TT", "x": 400, "y": 280},
+        {"id": "PC1", "type": "pc", "model": "PC-PT", "x": 250, "y": 450},
+        {"id": "PC2", "type": "pc", "model": "PC-PT", "x": 550, "y": 450}
+      ],
+      "links": [
+        {"a": "R1", "a_port": "GigabitEthernet0/0", "b": "SW1", "b_port": "GigabitEthernet0/1", "cable": "straight"},
+        {"a": "SW1", "a_port": "FastEthernet0/10", "b": "PC1", "b_port": "FastEthernet0", "cable": "straight"},
+        {"a": "SW1", "a_port": "FastEthernet0/20", "b": "PC2", "b_port": "FastEthernet0", "cable": "straight"}
+      ],
+      "vlans": [
+        {"id": 10, "name": "STAFF"},
+        {"id": 20, "name": "GUESTS"}
+      ],
+      "ip_plan": [
+        {"device": "R1", "interface": "GigabitEthernet0/0.10", "ip": "192.168.10.1", "mask": "255.255.255.0", "gateway": null},
+        {"device": "R1", "interface": "GigabitEthernet0/0.20", "ip": "192.168.20.1", "mask": "255.255.255.0", "gateway": null},
+        {"device": "PC1", "interface": "FastEthernet0", "ip": "192.168.10.100", "mask": "255.255.255.0", "gateway": "192.168.10.1"},
+        {"device": "PC2", "interface": "FastEthernet0", "ip": "192.168.20.100", "mask": "255.255.255.0", "gateway": "192.168.20.1"}
+      ],
+      "routing": {
+        "protocol": "none",
+        "process_id": null,
+        "area": null
+      },
+      "services": {
+        "dhcp": [
+          {
+            "pool_name": "POOL_STAFF",
+            "network": "192.168.10.0",
+            "mask": "255.255.255.0",
+            "default_router": "192.168.10.1",
+            "dns_server": "8.8.8.8"
+          },
+          {
+            "pool_name": "POOL_GUESTS",
+            "network": "192.168.20.0",
+            "mask": "255.255.255.0",
+            "default_router": "192.168.20.1",
+            "dns_server": "8.8.8.8"
+          }
+        ],
+        "nat": null,
+        "acls": []
+      }
+    }
+  },
+  {
+    "user": "Small office network with 1 router, 1 switch, 2 PCs and 1 server",
+    "assistant": {
+      "name": "small-office",
+      "devices": [
+        {"id": "R1", "type": "router", "model": "2911", "x": 400, "y": 120},
+        {"id": "SW1", "type": "switch", "model": "2960-24TT", "x": 400, "y": 280},
+        {"id": "PC1", "type": "pc", "model": "PC-PT", "x": 200, "y": 450},
+        {"id": "PC2", "type": "pc", "model": "PC-PT", "x": 400, "y": 450},
+        {"id": "SRV1", "type": "server", "model": "Server-PT", "x": 600, "y": 450}
+      ],
+      "links": [
+        {"a": "R1", "a_port": "GigabitEthernet0/0", "b": "SW1", "b_port": "GigabitEthernet0/1", "cable": "straight"},
+        {"a": "SW1", "a_port": "FastEthernet0/1", "b": "PC1", "b_port": "FastEthernet0", "cable": "straight"},
+        {"a": "SW1", "a_port": "FastEthernet0/2", "b": "PC2", "b_port": "FastEthernet0", "cable": "straight"},
+        {"a": "SW1", "a_port": "FastEthernet0/3", "b": "SRV1", "b_port": "FastEthernet0", "cable": "straight"}
+      ],
+      "vlans": [],
+      "ip_plan": [
+        {"device": "R1", "interface": "GigabitEthernet0/0", "ip": "192.168.1.1", "mask": "255.255.255.0", "gateway": null},
+        {"device": "PC1", "interface": "FastEthernet0", "ip": "192.168.1.10", "mask": "255.255.255.0", "gateway": "192.168.1.1"},
+        {"device": "PC2", "interface": "FastEthernet0", "ip": "192.168.1.20", "mask": "255.255.255.0", "gateway": "192.168.1.1"},
+        {"device": "SRV1", "interface": "FastEthernet0", "ip": "192.168.1.50", "mask": "255.255.255.0", "gateway": "192.168.1.1"}
+      ],
+      "routing": {
+        "protocol": "none",
+        "process_id": null,
+        "area": null
+      },
+      "services": {
+        "dhcp": [
+          {
+            "pool_name": "LAN_POOL",
+            "network": "192.168.1.0",
+            "mask": "255.255.255.0",
+            "default_router": "192.168.1.1",
+            "dns_server": "192.168.1.50"
+          }
+        ],
+        "nat": null,
+        "acls": []
+      }
+    }
+  }
+]

@@ -1,0 +1,99 @@
+{
+  "timestamp": "2026-10-20 12:15:27",
+  "total_tests": 10,
+  "valid_json_rate_pct": 100.0,
+  "zero_error_rate_pct": 100.0,
+  "avg_latency_ms": 617.0,
+  "results": [
+    {
+      "test_id": 1,
+      "prompt": "Build a small office network with 1 router, 1 switch, and 2 PCs.",
+      "latency_ms": 1067,
+      "valid_json": true,
+      "zero_errors": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "test_id": 2,
+      "prompt": "Create a network with 1 router, 1 switch, 2 VLANs with inter-VLAN routing and DHCP.",
+      "latency_ms": 538,
+      "valid_json": true,
+      "zero_errors": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "test_id": 3,
+      "prompt": "Build a network with 3 routers, 3 switches, and 3 PCs using OSPF.",
+      "latency_ms": 520,
+      "valid_json": true,
+      "zero_errors": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "test_id": 4,
+      "prompt": "Build a small office network with 1 router, 1 switch, and 2 PCs.",
+      "latency_ms": 552,
+      "valid_json": true,
+      "zero_errors": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "test_id": 5,
+      "prompt": "Build a small office network with 1 router, 1 switch, and 2 PCs.",
+      "latency_ms": 635,
+      "valid_json": true,
+      "zero_errors": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "test_id": 6,
+      "prompt": "Build a small office network with 1 router, 1 switch, and 2 PCs.",
+      "latency_ms": 554,
+      "valid_json": true,
+      "zero_errors": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "test_id": 7,
+      "prompt": "Set up a OSPF backbone infrastructure with 0 VLANs, inter-VLAN routing, and 2 computers.",
+      "latency_ms": 607,
+      "valid_json": true,
+      "zero_errors": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "test_id": 8,
+      "prompt": "Design a network lab with 3 routers, 3 switches, and DHCP for 3 hosts.",
+      "latency_ms": 547,
+      "valid_json": true,
+      "zero_errors": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "test_id": 9,
+      "prompt": "Create a network with 1 router, 1 switch, 2 VLANs with inter-VLAN routing and DHCP.",
+      "latency_ms": 583,
+      "valid_json": true,
+      "zero_errors": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "test_id": 10,
+      "prompt": "Build a small office network with 1 router, 1 switch, and 2 PCs.",
+      "latency_ms": 567,
+      "valid_json": true,
+      "zero_errors": true,
+      "errors": [],
+      "warnings": []
+    }
+  ]
+}
