@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Copy, Check, Download, AlertTriangle, CheckCircle, Terminal, FileCode, ShieldAlert, Send } from 'lucide-react';
 import { GenerateResponse, ValidationResult, Topology } from '../api/types';
 
@@ -42,7 +42,7 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${topology?.name || 'topology'}_ptbuilder.js`;
+    a.download = `${topology?.name || 'topology'}_ptbuilder.pts`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -199,7 +199,7 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
                   className="flex items-center gap-1 px-2.5 py-1 text-xs bg-cyan-900/40 hover:bg-cyan-800/60 text-cyan-300 rounded border border-cyan-700/50 transition"
                 >
                   <Download className="w-3 h-3" />
-                  <span>Download .js</span>
+                  <span>Download .pts</span>
                 </button>
               </div>
             </div>
@@ -238,7 +238,7 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
                     key={idx}
                     className="p-2.5 rounded-lg bg-rose-950/40 border border-rose-800/50 text-xs text-rose-300 leading-relaxed flex items-start gap-2"
                   >
-                    <span className="font-bold text-rose-400">•</span>
+                    <span className="font-bold text-rose-400">â€¢</span>
                     <span>{err}</span>
                   </div>
                 ))}
@@ -257,7 +257,7 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
                     key={idx}
                     className="p-2.5 rounded-lg bg-amber-950/40 border border-amber-800/50 text-xs text-amber-300 leading-relaxed flex items-start gap-2"
                   >
-                    <span className="font-bold text-amber-400">•</span>
+                    <span className="font-bold text-amber-400">â€¢</span>
                     <span>{warn}</span>
                   </div>
                 ))}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   X, Bot, Terminal, FileCode, ShieldAlert, Send, Copy, Check, Download,
   Sparkles, Loader2, BookOpen, Layers
@@ -71,7 +71,7 @@ export const ConsoleAndAssistantModal: React.FC<ConsoleAndAssistantModalProps> =
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${topology?.name || 'topology'}_ptbuilder.js`;
+    a.download = `${topology?.name || 'topology'}_ptbuilder.pts`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -89,7 +89,7 @@ export const ConsoleAndAssistantModal: React.FC<ConsoleAndAssistantModalProps> =
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
             <h2 className="text-sm font-bold text-white font-mono tracking-wide">
-              CLUST • SYSTEM CONSOLE & AI COPILOT
+              CLUST â€¢ SYSTEM CONSOLE & AI COPILOT
             </h2>
           </div>
 
@@ -170,7 +170,7 @@ export const ConsoleAndAssistantModal: React.FC<ConsoleAndAssistantModalProps> =
                     disabled={isLoading}
                     className="text-[11px] text-slate-300 hover:text-cyan-300 bg-[#141a26] hover:bg-[#1b2332] px-3 py-1 rounded-full border border-[#212a3d] transition disabled:opacity-50"
                   >
-                    ⚡ {chip}
+                    âš¡ {chip}
                   </button>
                 ))}
               </div>
@@ -319,7 +319,7 @@ export const ConsoleAndAssistantModal: React.FC<ConsoleAndAssistantModalProps> =
                     className="flex items-center gap-1.5 px-3 py-1 text-xs bg-cyan-950/80 hover:bg-cyan-900/80 text-cyan-300 rounded border border-cyan-700/50 transition"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>Download .js</span>
+                    <span>Download .pts</span>
                   </button>
                   <button
                     onClick={onPushToPacketTracer}
@@ -355,7 +355,7 @@ export const ConsoleAndAssistantModal: React.FC<ConsoleAndAssistantModalProps> =
                   <div className="text-xs font-bold text-rose-400 uppercase font-mono">Errors ({errorCount})</div>
                   {validation?.errors.map((err, i) => (
                     <div key={i} className="p-2.5 rounded bg-rose-950/40 border border-rose-800/50 text-xs text-rose-300">
-                      • {err}
+                      â€¢ {err}
                     </div>
                   ))}
                 </div>
@@ -366,7 +366,7 @@ export const ConsoleAndAssistantModal: React.FC<ConsoleAndAssistantModalProps> =
                   <div className="text-xs font-bold text-amber-400 uppercase font-mono">Warnings ({warningCount})</div>
                   {validation?.warnings.map((w, i) => (
                     <div key={i} className="p-2.5 rounded bg-amber-950/40 border border-amber-800/50 text-xs text-amber-300">
-                      • {w}
+                      â€¢ {w}
                     </div>
                   ))}
                 </div>
