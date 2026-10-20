@@ -1,0 +1,92 @@
+[
+  {
+    "user_request": "Build a network with 2 routers connected together, each router having 1 switch and 2 PCs. Use static routing.",
+    "topology": {
+      "name": "two-site-static-routing",
+      "devices": [
+        {"id": "R1", "type": "router", "model": "2911", "x": 250, "y": 150},
+        {"id": "R2", "type": "router", "model": "2911", "x": 550, "y": 150},
+        {"id": "SW1", "type": "switch", "model": "2960-24TT", "x": 250, "y": 280},
+        {"id": "SW2", "type": "switch", "model": "2960-24TT", "x": 550, "y": 280},
+        {"id": "PC1", "type": "pc", "model": "PC-PT", "x": 180, "y": 420},
+        {"id": "PC2", "type": "pc", "model": "PC-PT", "x": 320, "y": 420},
+        {"id": "PC3", "type": "pc", "model": "PC-PT", "x": 480, "y": 420},
+        {"id": "PC4", "type": "pc", "model": "PC-PT", "x": 620, "y": 420}
+      ],
+      "links": [
+        {"a": "R1", "a_port": "GigabitEthernet0/1", "b": "R2", "b_port": "GigabitEthernet0/1", "cable": "cross"},
+        {"a": "R1", "a_port": "GigabitEthernet0/0", "b": "SW1", "b_port": "GigabitEthernet0/1", "cable": "straight"},
+        {"a": "R2", "a_port": "GigabitEthernet0/0", "b": "SW2", "b_port": "GigabitEthernet0/1", "cable": "straight"},
+        {"a": "SW1", "a_port": "FastEthernet0/1", "b": "PC1", "b_port": "FastEthernet0", "cable": "straight"},
+        {"a": "SW1", "a_port": "FastEthernet0/2", "b": "PC2", "b_port": "FastEthernet0", "cable": "straight"},
+        {"a": "SW2", "a_port": "FastEthernet0/1", "b": "PC3", "b_port": "FastEthernet0", "cable": "straight"},
+        {"a": "SW2", "a_port": "FastEthernet0/2", "b": "PC4", "b_port": "FastEthernet0", "cable": "straight"}
+      ],
+      "vlans": [],
+      "ip_plan": [
+        {"device": "R1", "interface": "GigabitEthernet0/1", "ip": "10.0.0.1", "mask": "255.255.255.252", "gateway": null},
+        {"device": "R2", "interface": "GigabitEthernet0/1", "ip": "10.0.0.2", "mask": "255.255.255.252", "gateway": null},
+        {"device": "R1", "interface": "GigabitEthernet0/0", "ip": "192.168.1.1", "mask": "255.255.255.0", "gateway": null},
+        {"device": "R2", "interface": "GigabitEthernet0/0", "ip": "192.168.2.1", "mask": "255.255.255.0", "gateway": null},
+        {"device": "PC1", "interface": "FastEthernet0", "ip": "192.168.1.10", "mask": "255.255.255.0", "gateway": "192.168.1.1"},
+        {"device": "PC2", "interface": "FastEthernet0", "ip": "192.168.1.11", "mask": "255.255.255.0", "gateway": "192.168.1.1"},
+        {"device": "PC3", "interface": "FastEthernet0", "ip": "192.168.2.10", "mask": "255.255.255.0", "gateway": "192.168.2.1"},
+        {"device": "PC4", "interface": "FastEthernet0", "ip": "192.168.2.11", "mask": "255.255.255.0", "gateway": "192.168.2.1"}
+      ],
+      "routing": {
+        "protocol": "static",
+        "process_id": null,
+        "area": null
+      },
+      "services": {
+        "dhcp": [],
+        "nat": null,
+        "acls": []
+      }
+    }
+  },
+  {
+    "user_request": "Create a branch office network with 1 router, 1 switch, 1 server, and 2 PCs with RIP routing",
+    "topology": {
+      "name": "branch-office-rip",
+      "devices": [
+        {"id": "R1", "type": "router", "model": "2911", "x": 400, "y": 120},
+        {"id": "SW1", "type": "switch", "model": "2960-24TT", "x": 400, "y": 260},
+        {"id": "SRV1", "type": "server", "model": "Server-PT", "x": 200, "y": 420},
+        {"id": "PC1", "type": "pc", "model": "PC-PT", "x": 400, "y": 420},
+        {"id": "PC2", "type": "pc", "model": "PC-PT", "x": 600, "y": 420}
+      ],
+      "links": [
+        {"a": "R1", "a_port": "GigabitEthernet0/0", "b": "SW1", "b_port": "GigabitEthernet0/1", "cable": "straight"},
+        {"a": "SW1", "a_port": "FastEthernet0/1", "b": "SRV1", "b_port": "FastEthernet0", "cable": "straight"},
+        {"a": "SW1", "a_port": "FastEthernet0/2", "b": "PC1", "b_port": "FastEthernet0", "cable": "straight"},
+        {"a": "SW1", "a_port": "FastEthernet0/3", "b": "PC2", "b_port": "FastEthernet0", "cable": "straight"}
+      ],
+      "vlans": [],
+      "ip_plan": [
+        {"device": "R1", "interface": "GigabitEthernet0/0", "ip": "172.16.1.1", "mask": "255.255.255.0", "gateway": null},
+        {"device": "SRV1", "interface": "FastEthernet0", "ip": "172.16.1.5", "mask": "255.255.255.0", "gateway": "172.16.1.1"},
+        {"device": "PC1", "interface": "FastEthernet0", "ip": "172.16.1.10", "mask": "255.255.255.0", "gateway": "172.16.1.1"},
+        {"device": "PC2", "interface": "FastEthernet0", "ip": "172.16.1.11", "mask": "255.255.255.0", "gateway": "172.16.1.1"}
+      ],
+      "routing": {
+        "protocol": "rip",
+        "process_id": null,
+        "area": null
+      },
+      "services": {
+        "dhcp": [
+          {
+            "pool_name": "BRANCH_POOL",
+            "network": "172.16.1.0",
+            "mask": "255.255.255.0",
+            "default_router": "172.16.1.1",
+            "dns_server": "172.16.1.5"
+          }
+        ],
+        "nat": null,
+        "acls": []
+      }
+    }
+  }
+]

@@ -1,0 +1,12 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+app.db
+*.db-journal
+chroma_data/
+chroma_db/
+evaluation_results.json
+frontend/node_modules/
+frontend/dist/
