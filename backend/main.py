@@ -209,14 +209,22 @@ async def push_to_packet_tracer(request: TopologyGenerateRequest):
         r"C:\Program Files\Cisco Packet Tracer\bin\PacketTracer.exe",
         r"C:\Program Files (x86)\Cisco Packet Tracer\bin\PacketTracer.exe",
     ]
+    for program_dir in (Path(r"C:\Program Files"), Path(r"C:\Program Files (x86)")):
+        packet_tracer_candidates.extend(
+            str(path)
+            for path in program_dir.glob(r"Cisco Packet Tracer*\\bin\\PacketTracer.exe")
+        )
     packet_tracer_path = next(
         (path for path in packet_tracer_candidates if path and Path(path).exists()),
         None
     )
     packet_tracer_started = False
     if packet_tracer_path:
-        subprocess.Popen([packet_tracer_path], close_fds=True)
-        packet_tracer_started = True
+        try:
+            subprocess.Popen([packet_tracer_path], close_fds=True)
+            packet_tracer_started = True
+        except OSError:
+            packet_tracer_started = False
     pt_bridge_url = os.getenv(
         "PACKET_TRACER_BRIDGE_URL",
         os.getenv("PT_BRIDGE_URL", "http://localhost:39000")
@@ -229,12 +237,21 @@ async def push_to_packet_tracer(request: TopologyGenerateRequest):
             resp = await client.post(pt_bridge_url, json={"script": script})
             if resp.status_code == 200:
                 result = resp.json()
+                bridge_message = result.get(
+                    "message",
+                    "Script received by the PTBuilder bridge."
+                )
+                launch_message = (
+                    "Packet Tracer was opened."
+                    if packet_tracer_started
+                    else "Packet Tracer was not found or could not be opened."
+                )
                 return {
                     "success": True,
-                    "message": result.get(
-                        "message",
-                        "Script received by the PTBuilder bridge."
-                    ) + f" Bundle saved to {bundle_dir}.",
+                    "message": (
+                        f"{launch_message} {bridge_message} "
+                        f"Bundle saved to {bundle_dir}."
+                    ),
                     "bundle_path": str(bundle_dir),
                     "packet_tracer_started": packet_tracer_started,
                 }
