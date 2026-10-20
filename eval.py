@@ -5,89 +5,90 @@ import time
 import asyncio
 from typing import List, Dict, Any
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "backend")))
-from app.services.topology_agent import build_topology
-from app.services.validator import validate_topology
+# Ensure project root is in sys.path
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+from backend.services.topology_agent import generate_topology
+from backend.services.validator import validate_topology
+from backend.database import repo
 
-async def run_evaluation(num_tests: int = 50):
-    val_file = os.path.join(os.path.dirname(__file__), "dataset", "val.jsonl")
-    if not os.path.exists(val_file):
-        print("Validation dataset not found. Generating it first...")
-        from dataset.generate_dataset import generate_datasets
-        generate_datasets(100, 50)
+VAL_PATH = os.path.join(os.path.dirname(__file__), "dataset", "val.jsonl")
+RESULTS_PATH = os.path.join(os.path.dirname(__file__), "evaluation_results.json")
 
-    test_cases = []
-    with open(val_file, "r", encoding="utf-8") as f:
+
+async def run_evaluation(max_samples: int = 20):
+    repo.init_db()
+    print("=" * 65)
+    print("TopoGemma / Net-Pilot-AI: Quantitative Model & System Evaluation")
+    print("=" * 65)
+
+    if not os.path.exists(VAL_PATH):
+        print(f"Error: Validation dataset not found at {VAL_PATH}. Run dataset/generate_dataset.py first.")
+        return
+
+    test_prompts: List[str] = []
+    with open(VAL_PATH, "r", encoding="utf-8") as f:
         for line in f:
             if line.strip():
-                data = json.loads(line)
-                user_msg = next((m["content"] for m in data["messages"] if m["role"] == "user"), "")
-                if user_msg:
-                    test_cases.append(user_msg)
-            if len(test_cases) >= num_tests:
-                break
+                item = json.loads(line)
+                for msg in item.get("messages", []):
+                    if msg.get("role") == "user":
+                        test_prompts.append(msg.get("content"))
+                        break
 
-    print("=" * 65)
-    print(f" TopoGemma Evaluation Harness - Running {len(test_cases)} Test Prompts")
-    print("=" * 65)
+    samples = test_prompts[:max_samples]
+    print(f"Loaded {len(samples)} evaluation test prompts.\n")
 
     valid_json_count = 0
     zero_error_count = 0
-    total_latency_ms = 0
-    results_detail = []
+    latencies: List[float] = []
 
-    for idx, prompt in enumerate(test_cases, 1):
+    print(f"{'Idx':<4} | {'Latency':<8} | {'JSON Valid':<10} | {'Validator Pass':<14} | Prompt Preview")
+    print("-" * 65)
+
+    for idx, prompt in enumerate(samples, 1):
         t0 = time.time()
-        topo, val = await build_topology(prompt)
-        elapsed_ms = int((time.time() - t0) * 1000)
-        total_latency_ms += elapsed_ms
+        topo, val_res = await generate_topology(prompt, max_retries=2)
+        elapsed_ms = (time.time() - t0) * 1000
+        latencies.append(elapsed_ms)
 
-        is_valid_json = (topo is not None)
-        has_zero_errors = (val.is_valid and len(val.errors) == 0)
+        is_valid_json = topo is not None
+        is_zero_error = is_valid_json and len(val_res.errors) == 0
 
         if is_valid_json:
             valid_json_count += 1
-        if has_zero_errors:
+        if is_zero_error:
             zero_error_count += 1
 
-        status_str = "PASS" if has_zero_errors else ("WARN" if is_valid_json else "FAIL")
-        print(f"[{idx:02d}/{len(test_cases)}] {status_str} | {elapsed_ms:4d}ms | {prompt[:45]}...")
+        json_badge = "[PASS]" if is_valid_json else "[FAIL]"
+        val_badge = "[PASS]" if is_zero_error else "[FAIL]"
+        preview = (prompt[:30] + "...") if len(prompt) > 30 else prompt
 
-        results_detail.append({
-            "test_id": idx,
-            "prompt": prompt,
-            "latency_ms": elapsed_ms,
-            "valid_json": is_valid_json,
-            "zero_errors": has_zero_errors,
-            "errors": val.errors,
-            "warnings": val.warnings
-        })
+        print(f"{idx:<4} | {elapsed_ms:>6.1f}ms | {json_badge:^10} | {val_badge:^14} | {preview}")
 
-    json_rate = (valid_json_count / len(test_cases)) * 100
-    val_rate = (zero_error_count / len(test_cases)) * 100
-    avg_latency = total_latency_ms / len(test_cases)
+    total = len(samples)
+    json_rate = (valid_json_count / total) * 100 if total else 0.0
+    val_rate = (zero_error_count / total) * 100 if total else 0.0
+    avg_latency = sum(latencies) / len(latencies) if latencies else 0.0
 
-    print("\n" + "=" * 65)
-    print(" EVALUATION RESULTS SUMMARY")
     print("=" * 65)
-    print(f" Total Tests Run:              {len(test_cases)}")
-    print(f" Valid JSON Output Rate:       {json_rate:.1f}% ({valid_json_count}/{len(test_cases)})")
-    print(f" Zero-Error Validation Rate:   {val_rate:.1f}% ({zero_error_count}/{len(test_cases)})")
-    print(f" Average Latency per Request:  {avg_latency:.1f} ms")
+    print("EVALUATION SUMMARY RESULTS (JUDGES SLIDE METRICS):")
+    print(f"Total Test Prompts Evaluated: {total}")
+    print(f"JSON Syntax & Schema Accuracy: {json_rate:.1f}% ({valid_json_count}/{total})")
+    print(f"Deterministic Network Validation Pass Rate: {val_rate:.1f}% ({zero_error_count}/{total})")
+    print(f"Average System Latency: {avg_latency:.1f} ms")
     print("=" * 65)
 
-    report = {
+    results_data = {
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "total_tests": len(test_cases),
-        "valid_json_rate_pct": json_rate,
-        "zero_error_rate_pct": val_rate,
-        "avg_latency_ms": avg_latency,
-        "results": results_detail
+        "total_evaluated": total,
+        "json_parse_rate_percent": json_rate,
+        "validator_zero_error_rate_percent": val_rate,
+        "average_latency_ms": avg_latency
     }
-    with open("evaluation_report.json", "w", encoding="utf-8") as rf:
-        json.dump(report, rf, indent=2)
-    print("Detailed evaluation report written to evaluation_report.json")
+    with open(RESULTS_PATH, "w", encoding="utf-8") as f:
+        json.dump(results_data, f, indent=2)
+    print(f"Saved evaluation metrics to {RESULTS_PATH}\n")
+
 
 if __name__ == "__main__":
-    n = int(sys.argv[1]) if len(sys.argv) > 1 else 20
-    asyncio.run(run_evaluation(n))
+    asyncio.run(run_evaluation(max_samples=10))

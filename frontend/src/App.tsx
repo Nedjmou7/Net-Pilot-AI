@@ -75,20 +75,6 @@ export const App: React.FC = () => {
 
   useEffect(() => { if (topology) processTopology(topology); }, [topology, processTopology]);
 
-  const activeProjectId = activeProject?.id;
-  const activeProjectName = activeProject?.name;
-  useEffect(() => {
-    if (!activeProjectId || !activeProjectName || !topology) return;
-    const timeout = window.setTimeout(async () => {
-      try {
-        const updated = await api.updateProject(activeProjectId, activeProjectName, topology);
-        setActiveProject(updated);
-        setProjects((current) => [updated, ...current.filter((project) => project.id !== updated.id)]);
-      } catch (error) { console.warn('Could not update saved lab topology', error); }
-    }, 700);
-    return () => window.clearTimeout(timeout);
-  }, [activeProjectId, activeProjectName, topology]);
-
   const handleNewChat = () => {
     setActiveProject(null);
     setMessages([]);
@@ -99,7 +85,8 @@ export const App: React.FC = () => {
   const handleSelectProject = async (project: Project) => {
     try {
       const saved = await api.getProject(project.id);
-      const restored = JSON.parse(saved.project.topology_json) as Topology;
+      const restored = saved.project.topology;
+      if (!restored) throw new Error('Saved project has no topology data');
       setActiveProject(saved.project);
       setTopology(restored);
       setMessages(asChatMessages(saved.messages ?? []));
@@ -109,7 +96,6 @@ export const App: React.FC = () => {
 
   const handleDeleteProject = async (project: Project) => {
     try {
-      await api.deleteProject(project.id);
       setProjects((current) => current.filter((item) => item.id !== project.id));
       if (activeProject?.id === project.id) handleNewChat();
       showToast('Lab removed from history', 'success');

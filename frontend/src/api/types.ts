@@ -13,7 +13,7 @@ export interface Link {
   a_port: string;
   b: string;
   b_port: string;
-  cable: 'straight' | 'crossover' | 'serial' | 'fiber' | 'auto';
+  cable: 'straight' | 'cross' | 'crossover' | 'serial' | 'console' | 'fiber' | 'auto';
 }
 
 export interface Vlan {
@@ -30,7 +30,7 @@ export interface IpAssignment {
 }
 
 export interface RoutingConfig {
-  protocol: 'ospf' | 'rip' | 'static' | 'eigrp' | 'none';
+  protocol: string;
   process_id?: number | null;
   area?: number | null;
 }
@@ -80,7 +80,7 @@ export interface Topology {
 export interface ValidationResult {
   errors: string[];
   warnings: string[];
-  is_valid: boolean;
+  is_valid?: boolean;
 }
 
 export interface ChatResponse {
@@ -99,19 +99,24 @@ export interface GenerateResponse {
 export interface Project {
   id: number;
   name: string;
-  topology_json: string;
+  topology?: Topology;
+  topology_json?: string;
   created_at: string;
   updated_at: string;
 }
 
 export interface HealthStatus {
   status: string;
-  database: string;
-  ollama: {
+  ollama_online?: boolean;
+  ollama_model?: string;
+  database_online?: boolean;
+  chroma_online?: boolean;
+  version?: string;
+  ollama?: {
     status: string;
     ollama_connected: boolean;
     model: string;
     model_available: boolean;
-    models_installed?: string[];
   };
+  database?: string;
 }
