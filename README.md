@@ -225,3 +225,7 @@ $env:PYTHONPATH = "backend"
 - **Live Demo (2 min)**: Click the prompt chip *"Build a network with 3 routers and OSPF"*. Watch the diagram appear in the interactive canvas, review the validation panel showing all networking constraints passed, and inspect the per-device Cisco IOS configurations.
 - **Troubleshooting (1 min)**: Type *"Why can't my PC ping the gateway?"*. Show TopoGemma conducting systematic analysis using the local CCNA knowledge base (RAG) and citing source documents.
 - **Why Local (30s)**: Complete privacy, zero API costs, runs on standard student laptops, and operates seamlessly even in air-gapped classrooms.
+=======
+# cisco-packet-tracer-assistant
+open source project for hacktoberfest 26 
+>>>>>>> 2f0a362d7a94bce793c0dd5aac21821137e14151
