@@ -193,7 +193,14 @@ async def push_to_packet_tracer(request: TopologyGenerateRequest):
         async with httpx.AsyncClient(timeout=5.0) as client:
             resp = await client.post(pt_bridge_url, json={"script": script})
             if resp.status_code == 200:
-                return {"success": True, "message": "Script pushed to Packet Tracer bridge!"}
+                result = resp.json()
+                return {
+                    "success": bool(result.get("success")),
+                    "message": result.get(
+                        "message",
+                        "Script received by the PTBuilder bridge."
+                    )
+                }
     except Exception:
         pass
 

@@ -8,5 +8,6 @@ app.db
 chroma_data/
 chroma_db/
 evaluation_results.json
+bridge/inbox/
 frontend/node_modules/
 frontend/dist/
