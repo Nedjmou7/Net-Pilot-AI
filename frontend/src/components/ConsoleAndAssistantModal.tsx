@@ -65,13 +65,13 @@ export const ConsoleAndAssistantModal: React.FC<ConsoleAndAssistantModalProps> =
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  const handleDownloadScript = () => {
+  const handleDownloadScript = (extension: 'js' | 'pts') => {
     if (!generation?.ptbuilder_script) return;
     const blob = new Blob([generation.ptbuilder_script], { type: 'text/javascript' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${topology?.name || 'topology'}_ptbuilder.pts`;
+    a.download = `${topology?.name || 'topology'}_ptbuilder.${extension}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -315,7 +315,14 @@ export const ConsoleAndAssistantModal: React.FC<ConsoleAndAssistantModalProps> =
                     )}
                   </button>
                   <button
-                    onClick={handleDownloadScript}
+                    onClick={() => handleDownloadScript('js')}
+                    className="flex items-center gap-1.5 px-3 py-1 text-xs bg-cyan-950/80 hover:bg-cyan-900/80 text-cyan-300 rounded border border-cyan-700/50 transition"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download .js</span>
+                  </button>
+                  <button
+                    onClick={() => handleDownloadScript('pts')}
                     className="flex items-center gap-1.5 px-3 py-1 text-xs bg-cyan-950/80 hover:bg-cyan-900/80 text-cyan-300 rounded border border-cyan-700/50 transition"
                   >
                     <Download className="w-3.5 h-3.5" />

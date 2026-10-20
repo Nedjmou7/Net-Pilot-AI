@@ -230,11 +230,11 @@ export const App: React.FC = () => {
     catch { showToast('Clipboard access is unavailable', 'error'); }
   };
 
-  const handleDownloadScript = () => {
+  const handleDownloadScript = (extension: 'js' | 'pts') => {
     if (!generation?.ptbuilder_script) return;
     const blob = new Blob([generation.ptbuilder_script], { type: 'text/javascript' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a'); link.href = url; link.download = `${topology?.name || 'packet-tracer-lab'}_ptbuilder.pts`; link.click(); URL.revokeObjectURL(url);
+    const link = document.createElement('a'); link.href = url; link.download = `${topology?.name || 'packet-tracer-lab'}_ptbuilder.${extension}`; link.click(); URL.revokeObjectURL(url);
   };
 
   const navItems: { id: WorkspaceTab; label: string; icon: React.ElementType }[] = [
@@ -300,7 +300,7 @@ export const App: React.FC = () => {
 
           {activeTab === 'script' && <div className="artifact-workspace">
             <div className="artifact-heading"><div className="artifact-heading-icon"><Code2 className="h-5 w-5" /></div><div><h1>PTBuilder script</h1><p>Use the generated script to recreate this lab in Cisco Packet Tracer.</p></div><span className="ptbuilder-badge"><Network className="h-3.5 w-3.5" />PTBUILDER</span></div>
-            {generation?.ptbuilder_script ? <><div className="artifact-toolbar"><span className="text-xs text-slate-500">JavaScript Â· {topology?.name || 'Network lab'}</span><div className="flex gap-2"><button className="artifact-action" onClick={() => handleCopy(generation.ptbuilder_script)}>{copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copied ? 'Copied' : 'Copy'}</button><button className="artifact-action primary" onClick={handleDownloadScript}><Download className="h-3.5 w-3.5" />Download .pts</button><button className="artifact-action push" onClick={handlePushToPacketTracer} disabled={isPushing}><Send className="h-3.5 w-3.5" />{isPushing ? 'Sendingâ€¦' : 'Send to Packet Tracer'}</button></div></div><pre className="code-view script-code"><div className="code-caption"><span className="code-light" /><span className="code-light" /><span className="code-light" />{topology?.name || 'network-lab'}_ptbuilder.pts</div><code>{generation.ptbuilder_script}</code></pre></> : <div className="artifact-empty"><FileCode2 className="h-8 w-8" /><strong>No PTBuilder script yet</strong><span>Ask the agent to build a lab to generate a Packet Tracer script.</span><button onClick={() => setActiveTab('chat')}>Start a chat</button></div>}
+            {generation?.ptbuilder_script ? <><div className="artifact-toolbar"><span className="text-xs text-slate-500">JavaScript Â· {topology?.name || 'Network lab'}</span><div className="flex gap-2"><button className="artifact-action" onClick={() => handleCopy(generation.ptbuilder_script)}>{copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copied ? 'Copied' : 'Copy'}</button><button className="artifact-action primary" onClick={() => handleDownloadScript('js')}><Download className="h-3.5 w-3.5" />Download .js</button><button className="artifact-action primary" onClick={() => handleDownloadScript('pts')}><Download className="h-3.5 w-3.5" />Download .pts</button><button className="artifact-action push" onClick={handlePushToPacketTracer} disabled={isPushing}><Send className="h-3.5 w-3.5" />{isPushing ? 'Sendingâ€¦' : 'Send to Packet Tracer'}</button></div></div><pre className="code-view script-code"><div className="code-caption"><span className="code-light" /><span className="code-light" /><span className="code-light" />{topology?.name || 'network-lab'}_ptbuilder.js</div><code>{generation.ptbuilder_script}</code></pre></> : <div className="artifact-empty"><FileCode2 className="h-8 w-8" /><strong>No PTBuilder script yet</strong><span>Ask the agent to build a lab to generate a Packet Tracer script.</span><button onClick={() => setActiveTab('chat')}>Start a chat</button></div>}
           </div>}
 
           {activeTab === 'topology' && <div className="topology-workspace">
