@@ -136,6 +136,15 @@ async def save_project(payload: ProjectCreate):
     proj = repo.create_project(name=payload.name, topology_json=topo_str)
     return proj
 
+@app.put("/api/projects/{project_id}")
+async def update_project(project_id: int, payload: ProjectCreate):
+    """Update a saved lab after its topology changes."""
+    topo_str = payload.topology.model_dump_json()
+    proj = repo.update_project(project_id, name=payload.name, topology_json=topo_str)
+    if not proj:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return proj
+
 @app.get("/api/projects/{project_id}")
 async def get_project(project_id: int):
     """Load a project and its chat history."""

@@ -1,178 +1,124 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import ReactFlow, {
-  Node,
-  Edge,
-  Controls,
-  Background,
-  BackgroundVariant,
-  MiniMap,
-  useNodesState,
-  useEdgesState,
-  MarkerType
+  Node, Edge, Background, BackgroundVariant, useNodesState, useEdgesState,
+  useReactFlow, ReactFlowProvider, Connection, OnSelectionChangeParams
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-
-import { Topology } from '../api/types';
+import { Topology, DeviceType, Link } from '../api/types';
 import { nodeTypes } from './CustomNodes';
+import { Bot, LayoutGrid, Minus, Network, Plus, Radio, Scan, Trash2, Waypoints } from 'lucide-react';
 
 interface TopologyDiagramProps {
   topology: Topology | null;
   onUpdateDevicePosition: (deviceId: string, x: number, y: number) => void;
+  onAddDevice: (type: DeviceType, model: string) => void;
+  onAddConnection: (sourceId: string, targetId: string, cable: Link['cable']) => string | null;
+  onDeleteDevices: (ids: string[]) => void;
+  onDeleteConnection: (sourceId: string, targetId: string) => void;
+  onSelectionChange: (ids: string[]) => void;
+  connectionMode: boolean;
+  onSetConnectionMode: (enabled: boolean) => void;
 }
 
-export const TopologyDiagram: React.FC<TopologyDiagramProps> = ({
-  topology,
-  onUpdateDevicePosition
-}) => {
-  // Convert topology.devices to React Flow Nodes
-  const initialNodes: Node[] = useMemo(() => {
-    if (!topology || !topology.devices) return [];
-
-    const ipMap = new Map<string, string>();
-    topology.ip_plan?.forEach((ip) => {
-      if (!ipMap.has(ip.device)) {
-        ipMap.set(ip.device, `${ip.ip}`);
-      }
-    });
-
-    return topology.devices.map((dev) => ({
-      id: dev.id,
-      type: 'networkDevice',
-      position: { x: dev.x, y: dev.y },
-      data: {
-        id: dev.id,
-        label: dev.id,
-        type: dev.type,
-        model: dev.model,
-        ip: ipMap.get(dev.id)
-      }
-    }));
-  }, [topology]);
-
-  // Convert topology.links to React Flow Edges
-  const initialEdges: Edge[] = useMemo(() => {
-    if (!topology || !topology.links) return [];
-
-    return topology.links.map((link, idx) => {
-      // Shorten port labels for display
-      const shortA = link.a_port.replace("GigabitEthernet", "Gi").replace("FastEthernet", "Fa").replace("Serial", "Se");
-      const shortB = link.b_port.replace("GigabitEthernet", "Gi").replace("FastEthernet", "Fa").replace("Serial", "Se");
-
-      const isCrossover = link.cable === 'crossover';
-      const isSerial = link.cable === 'serial';
-
-      let strokeColor = '#06b6d4'; // cyan for straight
-      if (isCrossover) strokeColor = '#f59e0b'; // amber for crossover
-      if (isSerial) strokeColor = '#ef4444'; // red for serial
-
-      return {
-        id: `link-${link.a}-${link.b}-${idx}`,
-        source: link.a,
-        target: link.b,
-        animated: true,
-        style: {
-          stroke: strokeColor,
-          strokeWidth: 2,
-          strokeDasharray: isCrossover ? '5 5' : undefined
-        },
-        label: `${shortA} ↔ ${shortB}`,
-        labelStyle: { fill: '#cbd5e1', fontSize: 10, fontFamily: 'monospace' },
-        labelBgStyle: { fill: '#0f172a', fillOpacity: 0.85 },
-        labelBgPadding: [4, 2] as [number, number],
-        labelBgBorderRadius: 4,
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          width: 12,
-          height: 12,
-          color: strokeColor
-        }
-      };
-    });
-  }, [topology]);
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
-  // Sync state when topology prop changes
-  React.useEffect(() => {
-    setNodes(initialNodes);
-  }, [initialNodes, setNodes]);
-
-  React.useEffect(() => {
-    setEdges(initialEdges);
-  }, [initialEdges, setEdges]);
-
-  const handleNodeDragStop = useCallback(
-    (_: React.MouseEvent, node: Node) => {
-      onUpdateDevicePosition(node.id, Math.round(node.position.x), Math.round(node.position.y));
-    },
-    [onUpdateDevicePosition]
-  );
-
-  return (
-    <div className="w-full h-full relative bg-slate-950 flex flex-col">
-      {/* Top Diagram Toolbar */}
-      <div className="h-9 px-4 border-b border-slate-800 bg-slate-900/40 flex items-center justify-between text-xs text-slate-400">
-        <div className="flex items-center gap-3">
-          <span className="font-semibold text-slate-200">Interactive Canvas</span>
-          <span className="text-[11px] text-slate-500">
-            {topology?.devices?.length || 0} Devices, {topology?.links?.length || 0} Links
-          </span>
-        </div>
-        <div className="flex items-center gap-4 text-[11px]">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-0.5 bg-cyan-400 rounded-full" />
-            <span>Straight</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-0.5 border-t border-dashed border-amber-400" />
-            <span>Crossover</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-0.5 bg-rose-500 rounded-full" />
-            <span>Serial</span>
-          </div>
-        </div>
-      </div>
-
-      {/* React Flow Viewport */}
-      <div className="flex-1 w-full h-full relative">
-        {!topology || topology.devices.length === 0 ? (
-          <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 text-xs gap-2">
-            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-              Interactive Canvas Ready
-            </div>
-            <p>Send a prompt to generate or load a topology.</p>
-          </div>
-        ) : (
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onNodeDragStop={handleNodeDragStop}
-            nodeTypes={nodeTypes}
-            fitView
-            fitViewOptions={{ padding: 0.2 }}
-            minZoom={0.2}
-            maxZoom={2.0}
-            className="bg-slate-950"
-          >
-            <Background color="#1e293b" gap={20} size={1} variant={BackgroundVariant.Dots} />
-            <Controls className="!bg-slate-900 !border-slate-800 !text-slate-300 !fill-slate-300 [&>button]:!border-slate-800 hover:[&>button]:!bg-slate-800" />
-            <MiniMap
-              nodeColor={(n) => {
-                if (n.data?.type === 'router') return '#06b6d4';
-                if (n.data?.type === 'switch') return '#10b981';
-                if (n.data?.type === 'server') return '#a855f7';
-                return '#3b82f6';
-              }}
-              maskColor="rgba(15, 23, 42, 0.7)"
-              className="!bg-slate-900 !border-slate-800 rounded-lg overflow-hidden"
-            />
-          </ReactFlow>
-        )}
-      </div>
-    </div>
-  );
+const interfaceName = (name: string) => name.replace('GigabitEthernet', 'G').replace('FastEthernet', 'Fa').replace('Serial', 'S');
+const linkHandles = (topology: Topology | null, a: string, b: string) => {
+  const source = topology?.devices.find((device) => device.id === a);
+  const target = topology?.devices.find((device) => device.id === b);
+  const dx = (target?.x ?? 0) - (source?.x ?? 0);
+  const dy = (target?.y ?? 0) - (source?.y ?? 0);
+  if (Math.abs(dx) >= Math.abs(dy)) return dx >= 0 ? ['source-right', 'target-left'] : ['source-left', 'target-right'];
+  return dy >= 0 ? ['source-bottom', 'target-top'] : ['source-top', 'target-bottom'];
 };
+
+const FlowCanvas: React.FC<TopologyDiagramProps> = ({ topology, onUpdateDevicePosition, onAddDevice, onAddConnection, onDeleteDevices, onDeleteConnection, onSelectionChange, connectionMode, onSetConnectionMode }) => {
+  const { zoomIn, zoomOut, fitView } = useReactFlow();
+  const [category, setCategory] = React.useState<'network' | 'end' | 'components' | 'connections' | 'multiuser'>('network');
+  const [group, setGroup] = React.useState('Routers');
+  const [cable, setCable] = React.useState<Link['cable']>('auto');
+  const nodes = useMemo<Node[]>(() => (topology?.devices ?? []).map((device) => ({
+    id: device.id,
+    type: 'networkDevice',
+    position: { x: device.x, y: device.y },
+    data: { id: device.id, label: device.id.toUpperCase(), type: device.type, model: device.model }
+  })), [topology]);
+  const edges = useMemo<Edge[]>(() => (topology?.links ?? []).map((link, index) => {
+    const [sourceHandle, targetHandle] = linkHandles(topology, link.a, link.b);
+    return {
+    id: `link-${link.a}-${link.b}-${index}`,
+    source: link.a,
+    target: link.b,
+    sourceHandle,
+    targetHandle,
+    label: `${interfaceName(link.a_port)} ↔ ${interfaceName(link.b_port)}`,
+    labelStyle: { fill: '#425968', fontSize: 9, fontFamily: 'Arial, sans-serif', fontWeight: 600 },
+    labelBgStyle: { fill: '#f8fafc', fillOpacity: 0.96 },
+    labelBgPadding: [5, 2] as [number, number],
+    labelBgBorderRadius: 3,
+    style: {
+      stroke: link.cable === 'crossover' ? '#aa7851' : link.cable === 'fiber' ? '#8970a7' : link.cable === 'serial' ? '#b46b6b' : '#536d7c',
+      strokeWidth: link.cable === 'fiber' ? 3 : 2.5,
+      strokeDasharray: link.cable === 'crossover' ? '5 3' : undefined
+    }
+  };}), [topology]);
+
+  const [flowNodes, setNodes, onNodesChange] = useNodesState(nodes);
+  const [flowEdges, setEdges, onEdgesChange] = useEdgesState(edges);
+  React.useEffect(() => setNodes(nodes), [nodes, setNodes]);
+  React.useEffect(() => setEdges(edges), [edges, setEdges]);
+
+  const handleNodeDragStop = useCallback((_: React.MouseEvent, node: Node) => {
+    onUpdateDevicePosition(node.id, Math.round(node.position.x), Math.round(node.position.y));
+  }, [onUpdateDevicePosition]);
+
+  const handleConnect = useCallback((connection: Connection) => {
+    if (!connection.source || !connection.target) return;
+    const error = onAddConnection(connection.source, connection.target, cable);
+    if (error) return;
+  }, [cable, onAddConnection]);
+
+  const handleDeleteEdges = useCallback((deleted: Edge[]) => {
+    deleted.forEach((edge) => { if (edge.source && edge.target) onDeleteConnection(edge.source, edge.target); });
+  }, [onDeleteConnection]);
+
+  const selectedIds = flowNodes.filter((node) => node.selected).map((node) => node.id);
+  const deviceGroups = category === 'network' ? ['Routers', 'Switches', 'Hubs', 'Wireless', 'Security', 'WAN'] : ['End Devices', 'Home Devices'];
+  const models: { type: DeviceType; model: string; label: string }[] = category === 'network' && group === 'Routers'
+    ? [['router','2911','Cisco 2911 Router'],['router','1941','Cisco 1941 Router'],['router','4321','Cisco 4321 Router'],['router','2901','Cisco 2901 Router']].map(([type,model,label]) => ({ type: type as DeviceType, model, label }))
+    : category === 'network' && group === 'Switches'
+    ? [['switch','2960-24TT','Cisco 2960-24TT'],['switch','3560-24PS','Cisco 3560-24PS'],['switch','3650-24PS','Cisco 3650-24PS']].map(([type,model,label]) => ({ type: type as DeviceType, model, label }))
+    : category === 'end' && group === 'End Devices'
+    ? [['pc','PC-PT','PC-PT'],['pc','Laptop-PT','Laptop-PT'],['server','Server-PT','Server-PT']].map(([type,model,label]) => ({ type: type as DeviceType, model, label }))
+    : category === 'end'
+    ? [['pc','Home-PC-PT','Home PC'],['server','Printer-PT','Printer-PT'],['server','TV-PT','TV-PT']].map(([type,model,label]) => ({ type: type as DeviceType, model, label }))
+    : [];
+
+  const addSelection = () => {
+    if (!selectedIds.length) return;
+    onDeleteDevices(selectedIds);
+  };
+
+  return <div className="topology-panel h-full w-full overflow-hidden rounded-lg border border-slate-200 bg-white flex flex-col">
+    <div className="pt-canvas-heading"><div><strong>Logical workspace</strong><span>{topology?.devices.length ?? 0} devices · {topology?.links.length ?? 0} connections</span></div><div className="pt-canvas-legend"><span><i className="router-legend" />Router / endpoint</span><span><i className="switch-legend" />Switch</span><span><i className="cable-legend" />Cable</span></div><button className="pt-delete-selected" title="Delete selected devices" disabled={!selectedIds.length} onClick={addSelection}><Trash2 className="h-3.5 w-3.5" />Delete selected</button></div>
+    <div className={`relative min-h-0 flex-1 ${connectionMode ? 'connection-active' : ''}`}>
+      <ReactFlow nodes={flowNodes} edges={flowEdges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onNodeDragStop={handleNodeDragStop} onConnect={handleConnect} onNodesDelete={(deleted) => onDeleteDevices(deleted.map((node) => node.id))} onEdgesDelete={handleDeleteEdges} onSelectionChange={({ nodes: selected }: OnSelectionChangeParams) => onSelectionChange(selected.map((node) => node.id))} nodesConnectable={connectionMode} nodeTypes={nodeTypes} fitView fitViewOptions={{ padding: 0.16 }} minZoom={0.2} maxZoom={2} className="pt-reactflow" proOptions={{ hideAttribution: true }}>
+        <Background color="#d5dfe5" gap={22} size={1} variant={BackgroundVariant.Dots} />
+      </ReactFlow>
+      {connectionMode && <div className="pt-connection-hint">Drag from one device port to another to add a cable</div>}
+      <div className="pt-zoom-controls"><button onClick={() => zoomOut()} aria-label="Zoom out"><Minus className="h-3.5 w-3.5" /></button><span>Zoom</span><button onClick={() => zoomIn()} aria-label="Zoom in"><Plus className="h-3.5 w-3.5" /></button><button onClick={() => fitView({ padding: 0.16, duration: 220 })} aria-label="Fit all devices"><Scan className="h-3.5 w-3.5" /></button></div>
+    </div>
+    <div className="pt-device-panel"><div className="pt-device-categories">
+      <button className={category === 'network' ? 'selected' : ''} onClick={() => { setCategory('network'); setGroup('Routers'); onSetConnectionMode(false); }}><Network />Network Devices</button>
+      <button className={category === 'end' ? 'selected' : ''} onClick={() => { setCategory('end'); setGroup('End Devices'); onSetConnectionMode(false); }}><Bot />End Devices</button>
+      <button className={category === 'components' ? 'selected' : ''} onClick={() => { setCategory('components'); onSetConnectionMode(false); }}><LayoutGrid />Components</button>
+      <button className={category === 'connections' ? 'selected' : ''} onClick={() => { setCategory('connections'); onSetConnectionMode(true); }}><Waypoints />Connections</button>
+      <button className={category === 'multiuser' ? 'selected' : ''} onClick={() => { setCategory('multiuser'); onSetConnectionMode(false); }}><Radio />Multiuser</button>
+    </div>
+      {category === 'network' || category === 'end' ? <div className="pt-device-models"><div className="pt-model-groups">{deviceGroups.map((name) => <button key={name} className={group === name ? 'selected' : ''} onClick={() => setGroup(name)}>{name}</button>)}</div><div className="pt-model-list">{models.length ? models.map(({ type, model, label }) => <button key={model} className="pt-model-card" onClick={() => onAddDevice(type, model)} title={`Add ${label}`}><span className={`mini-device ${type}`}><i /><i /><i /><i /></span><span>{label}</span></button>) : <div className="pt-palette-note">{group} models are not available in this lab builder yet.</div>}</div></div>
+      : category === 'connections' ? <div className="pt-cable-list">{([['auto','Automatically Choose Connection'],['straight','Copper Straight-Through'],['crossover','Copper Cross-Over'],['fiber','Fiber'],['serial','Serial DCE'] ] as [Link['cable'],string][]).map(([kind,label]) => <button key={kind} className={cable === kind ? 'selected' : ''} onClick={() => { setCable(kind); onSetConnectionMode(true); }}><span className={`cable-swatch ${kind}`} />{label}</button>)}<span className="pt-palette-note">Choose a cable, then drag between device ports.</span></div>
+      : <div className="pt-palette-note category-note">{category === 'components' ? 'No additional component models are available in this topology.' : 'Multiuser connections require an active Packet Tracer session.'}</div>}
+      <div className="pt-device-status"><span>{category === 'connections' ? `Cable: ${cable}` : category === 'network' || category === 'end' ? 'Click a device to add it to the workspace' : 'Packet Tracer workspace'}</span><span>{topology?.devices.length ?? 0} devices on canvas</span></div>
+    </div>
+  </div>;
+};
+
+export const TopologyDiagram: React.FC<TopologyDiagramProps> = (props) => <ReactFlowProvider><FlowCanvas {...props} /></ReactFlowProvider>;

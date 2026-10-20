@@ -93,6 +93,16 @@ class ApiClient {
     return await res.json();
   }
 
+  async updateProject(id: number, name: string, topology: Topology): Promise<Project> {
+    const res = await fetch(`${API_BASE}/api/projects/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, topology })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  }
+
   async getProject(id: number): Promise<{ project: Project; messages: any[] }> {
     const res = await fetch(`${API_BASE}/api/projects/${id}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);

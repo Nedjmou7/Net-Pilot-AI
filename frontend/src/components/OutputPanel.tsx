@@ -53,7 +53,7 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
   const warningCount = validation?.warnings?.length || 0;
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 border-l border-slate-800">
+    <div className="output-panel flex flex-col h-full bg-slate-900 border-l border-slate-800">
       {/* Tab Navigation Header */}
       <div className="h-10 border-b border-slate-800 bg-slate-950/60 px-3 flex items-center justify-between">
         <div className="flex gap-1">

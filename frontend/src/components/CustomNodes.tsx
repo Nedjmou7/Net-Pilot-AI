@@ -1,6 +1,5 @@
 import React, { memo } from 'react';
 import { Handle, Position } from 'reactflow';
-import { Router, Server, Laptop, Network } from 'lucide-react';
 import { DeviceType } from '../api/types';
 
 interface CustomNodeData {
@@ -9,63 +8,64 @@ interface CustomNodeData {
   type: DeviceType;
   model: string;
   ip?: string;
+  selected?: boolean;
+  portsCount?: string;
+  bandwidth?: string;
+  badge?: string;
 }
 
-export const NetworkNode = memo(({ data }: { data: CustomNodeData }) => {
-  const getIcon = () => {
-    switch (data.type) {
-      case 'router':
-        return <Router className="w-6 h-6 text-cyan-400" />;
-      case 'switch':
-        return <Network className="w-6 h-6 text-emerald-400" />;
-      case 'server':
-        return <Server className="w-6 h-6 text-purple-400" />;
-      case 'pc':
-      default:
-        return <Laptop className="w-6 h-6 text-blue-400" />;
-    }
-  };
+const RouterIcon = () => <svg viewBox="0 0 100 64" aria-hidden="true">
+  <ellipse cx="50" cy="18" rx="35" ry="12" fill="#d7edf7" stroke="#526b7c" strokeWidth="2" />
+  <path d="M15 18v23c0 7 16 12 35 12s35-5 35-12V18" fill="#a8d5e7" stroke="#526b7c" strokeWidth="2" />
+  <path d="M15 31c0 7 16 12 35 12s35-5 35-12" fill="none" stroke="#7795a5" strokeWidth="1.5" />
+  <path d="m37 23-8-5 8-5m-8 5h18m16 5 8-5-8-5m8 5H53" fill="none" stroke="#1877a8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+  <circle cx="39" cy="47" r="2" fill="#4baf63" /><circle cx="47" cy="47" r="2" fill="#4baf63" /><circle cx="55" cy="47" r="2" fill="#e8ad3c" />
+</svg>;
 
-  const getBorderColor = () => {
-    switch (data.type) {
-      case 'router':
-        return 'border-cyan-500/50 hover:border-cyan-400 shadow-cyan-950/40';
-      case 'switch':
-        return 'border-emerald-500/50 hover:border-emerald-400 shadow-emerald-950/40';
-      case 'server':
-        return 'border-purple-500/50 hover:border-purple-400 shadow-purple-950/40';
-      case 'pc':
-      default:
-        return 'border-blue-500/50 hover:border-blue-400 shadow-blue-950/40';
-    }
-  };
+const SwitchIcon = () => <svg viewBox="0 0 100 64" aria-hidden="true">
+  <path d="m19 15 62 0 9 8v29H19z" fill="#d8e4eb" stroke="#4e6574" strokeWidth="2" />
+  <path d="m19 15 9-8h62l-9 8z" fill="#eef4f7" stroke="#4e6574" strokeWidth="2" />
+  <path d="M28 7v8m62-8v8" stroke="#718996" strokeWidth="1.5" />
+  <path d="M27 25h5v4h-5zm10 0h5v4h-5zm10 0h5v4h-5zm10 0h5v4h-5zm10 0h5v4h-5zm10 0h5v4h-5zM27 34h5v4h-5zm10 0h5v4h-5zm10 0h5v4h-5zm10 0h5v4h-5zm10 0h5v4h-5zm10 0h5v4h-5z" fill="#647b89" />
+  <circle cx="79" cy="46" r="2" fill="#55ab69" /><circle cx="71" cy="46" r="2" fill="#55ab69" />
+</svg>;
 
-  return (
-    <div className={`px-4 py-3 rounded-xl bg-slate-900/90 backdrop-blur border-2 shadow-lg ${getBorderColor()} transition-all duration-200 min-w-[130px]`}>
-      <Handle type="target" position={Position.Top} className="!w-2.5 !h-2.5 !bg-cyan-400 !border-slate-950" />
-      <Handle type="source" position={Position.Bottom} className="!w-2.5 !h-2.5 !bg-cyan-400 !border-slate-950" />
-      <Handle type="target" position={Position.Left} className="!w-2.5 !h-2.5 !bg-cyan-400 !border-slate-950" />
-      <Handle type="source" position={Position.Right} className="!w-2.5 !h-2.5 !bg-cyan-400 !border-slate-950" />
+const PcIcon = () => <svg viewBox="0 0 100 76" aria-hidden="true">
+  <rect x="14" y="7" width="57" height="43" rx="3" fill="#e5edf2" stroke="#506978" strokeWidth="2" />
+  <rect x="19" y="12" width="47" height="32" rx="1" fill="#bfe2ef" stroke="#7595a3" strokeWidth="1.5" />
+  <path d="M38 50v8m10-8v8m-18 2h35" fill="none" stroke="#506978" strokeWidth="3" strokeLinecap="round" />
+  <rect x="76" y="27" width="14" height="37" rx="2" fill="#d5e0e7" stroke="#506978" strokeWidth="2" />
+  <circle cx="83" cy="34" r="1.8" fill="#4fa964" /><path d="M80 41h6m-6 5h6m-6 5h6" stroke="#7c919c" strokeWidth="1.5" />
+</svg>;
 
-      <div className="flex items-center gap-2.5">
-        <div className="p-1.5 rounded-lg bg-slate-800/80 border border-slate-700/50">
-          {getIcon()}
-        </div>
-        <div>
-          <div className="text-sm font-bold text-white tracking-wide">{data.label}</div>
-          <div className="text-[10px] text-slate-400 font-mono">{data.model}</div>
-        </div>
-      </div>
+const ServerIcon = () => <svg viewBox="0 0 76 76" aria-hidden="true">
+  <rect x="17" y="6" width="42" height="64" rx="3" fill="#d9e4eb" stroke="#506978" strokeWidth="2" />
+  {[14, 29, 44, 59].map((y) => <g key={y}><rect x="22" y={y} width="32" height="10" rx="1" fill="#eef4f7" stroke="#92a4ae" /><circle cx="28" cy={y + 5} r="1.7" fill="#54a969" /><path d={`M34 ${y + 4}h15`} stroke="#8396a1" strokeWidth="1.5" /></g>)}
+</svg>;
 
-      {data.ip && (
-        <div className="mt-2 pt-1.5 border-t border-slate-800 text-[11px] font-mono text-cyan-300 truncate">
-          {data.ip}
-        </div>
-      )}
-    </div>
-  );
-});
-
-export const nodeTypes = {
-  networkDevice: NetworkNode,
+const DeviceGlyph: React.FC<{ type: DeviceType }> = ({ type }) => {
+  if (type === 'router') return <RouterIcon />;
+  if (type === 'switch') return <SwitchIcon />;
+  if (type === 'server') return <ServerIcon />;
+  return <PcIcon />;
 };
+
+const deviceName: Record<DeviceType, string> = { router: 'Router', switch: 'Switch', pc: 'PC-PT', server: 'Server' };
+
+export const NetworkNode = memo(({ data }: { data: CustomNodeData }) => (
+  <div className={`pt-device-node ${data.selected ? 'chosen' : ''}`}>
+    <Handle id="target-top" type="target" position={Position.Top} className="pt-node-handle" />
+    <Handle id="source-top" type="source" position={Position.Top} className="pt-node-handle" />
+    <Handle id="source-bottom" type="source" position={Position.Bottom} className="pt-node-handle" />
+    <Handle id="target-bottom" type="target" position={Position.Bottom} className="pt-node-handle" />
+    <Handle id="target-left" type="target" position={Position.Left} className="pt-node-handle" />
+    <Handle id="source-left" type="source" position={Position.Left} className="pt-node-handle" />
+    <Handle id="source-right" type="source" position={Position.Right} className="pt-node-handle" />
+    <Handle id="target-right" type="target" position={Position.Right} className="pt-node-handle" />
+    <div className="pt-device-glyph"><DeviceGlyph type={data.type} /></div>
+    <div className="pt-device-label">{data.label}</div>
+    <div className="pt-device-model">{data.model || deviceName[data.type]}</div>
+  </div>
+));
+
+export const nodeTypes = { networkDevice: NetworkNode };

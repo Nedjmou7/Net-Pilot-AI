@@ -1,4 +1,4 @@
-# TopoGemma: Local AI Assistant for Cisco Packet Tracer
+![1792497150480](image/README/1792497150480.png)![1792497153587](image/README/1792497153587.png)![1792497179682](image/README/1792497179682.png)# TopoGemma: Local AI Assistant for Cisco Packet Tracer
 **Hackathon Build Plan & Complete Implementation · Gemma 4 + Packet Tracer · 100% Local, No Cloud**
 
 ---

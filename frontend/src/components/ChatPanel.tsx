@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, BookOpen, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
-import { ChatResponse } from '../api/types';
+﻿import React, { useState, useRef, useEffect } from 'react';
+import { Send, Bot, User, Sparkles, BookOpen, Loader2, Zap } from 'lucide-react';
+import { MessageContent } from './MessageContent';
 
 export interface ChatMessage {
   id: string;
@@ -49,15 +49,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 border-r border-slate-800">
+    <div className="chat-panel flex flex-col h-full bg-slate-900 border-r border-slate-800">
       {/* Panel Title Bar */}
       <div className="px-4 py-2.5 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Bot className="w-4 h-4 text-cyan-400" />
-          <span className="text-xs font-bold text-white uppercase tracking-wider">Assistant Chat</span>
+          <span className="text-xs font-bold text-white uppercase tracking-wider">Network AI Agent</span>
         </div>
         <span className="text-[10px] text-cyan-400 font-mono bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/40">
-          Gemma 4 Local
+          Packet Tracer AI
         </span>
       </div>
 
@@ -68,9 +68,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             key={idx}
             onClick={() => onSelectPromptChip(chip)}
             disabled={isLoading}
-            className="text-[11px] text-slate-300 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700/80 px-2.5 py-1 rounded-full border border-slate-700/60 transition text-left truncate max-w-full disabled:opacity-50"
+            className="prompt-chip px-2.5 py-1 rounded-full border transition text-left truncate max-w-full disabled:opacity-50"
           >
-            ⚡ {chip}
+            <><Zap aria-hidden="true" /> {chip}</>
           </button>
         ))}
       </div>
@@ -82,9 +82,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             <div className="w-12 h-12 rounded-2xl bg-cyan-950/40 border border-cyan-800/50 flex items-center justify-center mb-3">
               <Sparkles className="w-6 h-6 text-cyan-400" />
             </div>
-            <h3 className="text-sm font-bold text-white mb-1">Welcome to TopoGemma</h3>
+            <h3 className="text-sm font-bold text-white mb-1">Design a Cisco network</h3>
             <p className="text-xs text-slate-400 max-w-xs mb-4">
-              Ask to build network topologies, generate Packet Tracer scripts, or troubleshoot Cisco CCNA labs 100% locally.
+              Describe the lab you want to build. I can draft a topology, IOS configs, or a Packet Tracer script.
             </p>
           </div>
         ) : (
@@ -93,7 +93,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
               key={msg.id}
               className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
             >
-              <div className="flex items-center gap-1.5 mb-1 text-[10px] text-slate-400 font-medium">
+              <div className="chat-message-meta flex items-center gap-1.5 mb-1 font-medium">
                 {msg.role === 'user' ? (
                   <>
                     <span>You</span>
@@ -102,9 +102,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                 ) : (
                   <>
                     <Bot className="w-3 h-3 text-cyan-400" />
-                    <span className="text-cyan-400">TopoGemma</span>
+                    <span className="text-cyan-400">Network Agent</span>
                     {msg.intent && (
-                      <span className="px-1.5 py-0.2 rounded bg-slate-800 text-[9px] uppercase tracking-wider text-slate-400 font-mono">
+                      <span className="intent-badge px-1.5 py-0.5 rounded uppercase tracking-wider font-mono">
                         {msg.intent}
                       </span>
                     )}
@@ -113,18 +113,18 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
               </div>
 
               <div
-                className={`max-w-[90%] rounded-2xl p-3 text-xs leading-relaxed whitespace-pre-wrap ${
+                className={`chat-message-bubble max-w-[90%] rounded-2xl p-3 ${
                   msg.role === 'user'
-                    ? 'bg-cyan-600 text-white rounded-br-none shadow-md shadow-cyan-900/30 font-medium'
-                    : 'bg-slate-800/90 text-slate-100 rounded-bl-none border border-slate-700/60 shadow-lg'
+                    ? 'user rounded-br-none shadow-md shadow-cyan-900/10 font-medium'
+                    : 'assistant rounded-bl-none border shadow-sm'
                 }`}
               >
-                {msg.content}
+                <MessageContent content={msg.content} />
 
                 {/* Sources Cited Pill Badges */}
                 {msg.sources && msg.sources.length > 0 && (
-                  <div className="mt-3 pt-2.5 border-t border-slate-700/60">
-                    <div className="flex items-center gap-1 text-[10px] font-semibold text-cyan-300 mb-1.5">
+                  <div className="message-sources mt-3 pt-2.5">
+                    <div className="message-sources-title flex items-center gap-1 font-semibold mb-1.5">
                       <BookOpen className="w-3 h-3" />
                       <span>Knowledge Sources Consulted:</span>
                     </div>
@@ -132,7 +132,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                       {msg.sources.map((src, idx) => (
                         <span
                           key={idx}
-                          className="px-2 py-0.5 rounded-md bg-slate-900/80 border border-slate-700 text-[10px] text-slate-300 font-mono"
+                          className="source-chip px-2 py-1 rounded-md border font-mono"
                         >
                           {src}
                         </span>
@@ -150,13 +150,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           <div className="flex flex-col items-start">
             <div className="flex items-center gap-1.5 mb-1 text-[10px] text-cyan-400 font-medium">
               <Bot className="w-3 h-3" />
-              <span>TopoGemma Thinking</span>
+              <span>Network Agent Thinking</span>
             </div>
             <div className="bg-slate-800/80 border border-cyan-800/40 rounded-2xl rounded-bl-none p-3 flex items-center gap-2.5 shadow-lg">
               <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />
               <div className="text-xs text-slate-300">
                 <span className="font-semibold text-cyan-300">Evaluating network constraints...</span>
-                <p className="text-[10px] text-slate-400">Local Gemma 4 model inference in progress (5-30s)</p>
+                <p className="text-[10px] text-slate-400">Analyzing devices, connections, and configuration requirements</p>
               </div>
             </div>
           </div>
@@ -172,7 +172,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type: 'Build a network with 3 routers and OSPF'..."
+            placeholder="Describe a Cisco Packet Tracer lab..."
             disabled={isLoading}
             className="w-full pl-3.5 pr-10 py-2.5 text-xs bg-slate-900 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition disabled:opacity-50"
           />
